@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubscriptionStatus {
+  FREE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+model User {
+  id                   String             @id @default(cuid())
+  email                String             @unique
+  passwordHash         String?
+  name                 String?
+  role                 Role               @default(USER)
+  googleId             String?            @unique
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  subscriptionStatus   SubscriptionStatus @default(FREE)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  resumes              Resume[]
+  analyses             Analysis[]
+  jobMatches           JobMatch[]
+}
+
+model Resume {
+  id          String    @id @default(cuid())
+  userId      String
+  fileName    String
+  fileType    String
+  fileSize    Int
+  storageUrl  String
+  parsedText  String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analyses    Analysis[]
+  jobMatches  JobMatch[]
+
+  @@index([userId, createdAt])
+}
+
+model Analysis {
+  id              String   @id @default(cuid())
+  userId          String
+  resumeId        String?
+  atsScore        Int
+  skillsSection   String
+  experienceScore Int
+  educationScore  Int
+  suggestionsJson Json
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume          Resume?  @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
+
+model JobMatch {
+  id              String   @id @default(cuid())
+  userId          String
+  resumeId        String?
+  jobDescription  String
+  matchScore      Int
+  missingKeywords String[]
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume          Resume?  @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
