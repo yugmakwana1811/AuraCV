@@ -21,22 +21,50 @@ const defaultSettings: Settings = {
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
+function isBrowser() {
+  return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+}
+
+function parseStoredSettings(saved: string | null): Settings | null {
+  if (!saved) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(saved) as Partial<Settings>;
+    return {
+      theme: parsed.theme === 'light' || parsed.theme === 'dark' || parsed.theme === 'system'
+        ? parsed.theme
+        : defaultSettings.theme,
+      emailAlerts: typeof parsed.emailAlerts === 'boolean' ? parsed.emailAlerts : defaultSettings.emailAlerts,
+      weeklyDigest: typeof parsed.weeklyDigest === 'boolean' ? parsed.weeklyDigest : defaultSettings.weeklyDigest,
+      publicProfile: typeof parsed.publicProfile === 'boolean' ? parsed.publicProfile : defaultSettings.publicProfile,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>(() => {
-    const saved = localStorage.getItem('app-settings');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // ignore
-      }
+    if (!isBrowser()) {
+      return defaultSettings;
     }
-    return defaultSettings;
+
+    return parseStoredSettings(localStorage.getItem('app-settings')) ?? defaultSettings;
   });
 
   useEffect(() => {
-    localStorage.setItem('app-settings', JSON.stringify(settings));
-    
+    if (!isBrowser()) {
+      return;
+    }
+
+    try {
+      localStorage.setItem('app-settings', JSON.stringify(settings));
+    } catch (error) {
+      console.warn('Unable to persist AuraCV settings', error);
+    }
+
     // Apply Theme
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
