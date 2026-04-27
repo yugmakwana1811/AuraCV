@@ -1,8 +1,10 @@
+import { lazy, Suspense } from 'react';
 import { Brain, FileSearch, Sparkles, MoveRight, ArrowRight } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import AnimatedSection from '../components/AnimatedSection';
-import AbstractBrain3D from '../components/AbstractBrain3D';
-import Resume3D from '../components/Resume3D';
+
+const AbstractBrain3D = lazy(() => import('../components/AbstractBrain3D'));
+const Resume3D = lazy(() => import('../components/Resume3D'));
 
 export default function LandingPage({ onNavigate }: { onNavigate: (page: string) => void }) {
   const { scrollY } = useScroll();
@@ -79,7 +81,9 @@ export default function LandingPage({ onNavigate }: { onNavigate: (page: string)
               whileHover={{ scale: 1.02 }}
               className="relative z-10 w-full h-full glass-card rounded-full border-white/50 overflow-hidden shadow-2xl backdrop-blur-2xl transition-transform duration-500 cursor-grab active:cursor-grabbing"
             >
-               <AbstractBrain3D />
+               <Suspense fallback={<div className="h-full w-full animate-pulse rounded-full bg-white/30" />}>
+                 <AbstractBrain3D />
+               </Suspense>
             </motion.div>
             {/* Decorative Floating Elements */}
             <motion.div 
@@ -100,7 +104,9 @@ export default function LandingPage({ onNavigate }: { onNavigate: (page: string)
           
           {/* Scroll-Reactive 3D Resume */}
           <div className="absolute -bottom-32 md:-bottom-20 -right-8 w-64 h-80 z-20 pointer-events-none hidden md:block">
-            <Resume3D />
+            <Suspense fallback={<div className="h-full w-full rounded-[2rem] bg-white/20" />}>
+              <Resume3D />
+            </Suspense>
           </div>
         </motion.div>
       </section>
