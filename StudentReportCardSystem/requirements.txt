@@ -1,0 +1,20 @@
+# =====================================================
+# REQUIREMENTS
+# Student Report Card System
+# CBSE Class 12 IP Project
+# =====================================================
+
+# Install these packages using:
+# pip install -r requirements.txt
+
+# MySQL Connector for Python
+mysql-connector-python
+
+# Data Analysis Library
+pandas
+
+# Data Visualization Library
+matplotlib
+
+# numpy (required by matplotlib)
+numpy
